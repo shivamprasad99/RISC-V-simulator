@@ -1,0 +1,20 @@
+In phase 2, we tried to split up the work and different people made different modules (classes, in our case). 
+Amritpal did the most important work of merging all the modules to get a running code with everything clubbed together, and he himself made many classes(control , memory, register file). 
+Divyanshu was mainly responsible for making the ALU, and he suggested the solution for auipc and lui instructions after consulting you (introducing MuxA in the datapath and A_select control signal). 
+Mehakjot was responsible for making the Control Circuitry and designing the data flow.
+Ripudaman worked on the Decode part and is also making the GUI (which, probably at the time of submission, would not be complete). 
+Shivam Prasad made the Fetch part, and also corrected the code several times. 
+
+At the time of writing this report, we were trying to implement unsigned value instructions and handling .data.
+
+There is some problem with dealing with unsigned values in immediate field (slli, srli, srai). We are not sure if it will be resolved by the time we submit the code, but eventually it will be handled.
+
+There is also a Python code for phase 2 that was mostly made by Divyanshu because we wanted to take a safe side if our Java code did not work. That code is far from complete, but in some sense, it also counts for our project since it helped us identify various issues. We are not sure which code we will take next to phase 3 and phase 4, so we submit that code also.
+
+
+
+How to run -
+
+1. javac *.java
+2. java lexical
+3. java control

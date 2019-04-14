@@ -174,7 +174,7 @@ public class control{
         try{
             a.immediate = rs1_rs2_rd_immediate_n.get(3);
         }catch(Exception e){}
-    
+        
         // System.out.println(ra + " "+rb+ " "+rd+ " "+immediate);
         return a;   
     }
@@ -227,7 +227,8 @@ public class control{
         if(a.which_instruction == 36){   // jal
             register_file_object.store_in_register(a.rd, PC);
             PC = pc_object.adder(PC);
-            PC -= 4;
+            // PC -= 4; 
+            PC -= 8;
         }
         // where is srl in a.which_instruction
         else if(a.which_instruction == 23){
@@ -246,7 +247,7 @@ public class control{
                     controlUnitObject.setMuxInc(0);
                 setMuxValues(a);
                 PC = pc_object.adder(PC);
-                PC -= 4;
+                PC -= 8;
             }
         }
         else if(a.which_instruction == 31){
@@ -257,7 +258,7 @@ public class control{
                     controlUnitObject.setMuxInc(0);
                 setMuxValues(a);
                 PC = pc_object.adder(PC);
-                PC -= 4;
+                PC -= 8;
             }
         }
         else if(a.which_instruction == 32){
@@ -268,7 +269,7 @@ public class control{
                     controlUnitObject.setMuxInc(0);
                 setMuxValues(a);
                 PC = pc_object.adder(PC);
-                PC -= 4;
+                PC -= 8;
             }
         }
         else if(a.which_instruction == 33){
@@ -279,7 +280,7 @@ public class control{
                     controlUnitObject.setMuxInc(0);
                 setMuxValues(a);
                 PC = pc_object.adder(PC);
-                PC -= 4;
+                PC -= 8;
             }
         }
         else if(a.which_instruction == 34){
@@ -290,7 +291,7 @@ public class control{
                     controlUnitObject.setMuxInc(0);
                 setMuxValues(a);
                 PC = pc_object.adder(PC);
-                PC -= 4;
+                PC -= 8;
             }
         }
         else if(a.which_instruction == 35){
@@ -301,7 +302,7 @@ public class control{
                     controlUnitObject.setMuxInc(0);
                 setMuxValues(a);
                 PC = pc_object.adder(PC);
-                PC -= 4;
+                PC -= 8;
             }
         }
         return a;
@@ -426,17 +427,7 @@ public class control{
 
             ID = decoder(IF);
             
-            if((ID.rs1 == MEM.rd&&ID.rs1!=0)||(ID.rs2 == MEM.rd&&ID.rs2!=0) ){
-                // mem_stall=1;
-                System.out.println("entered first");
-                stall_counter++;
-                cycle_counter++;
-                writeBack(MEM);
-                ID = decoder(IF);
-                // continue;
-            }
-
-            else if((ID.rs1 == EX.rd&&ID.rs1!=0)||(ID.rs2 == EX.rd&&ID.rs2!=0)){
+            if((ID.rs1 == EX.rd&&ID.rs1!=0)||(ID.rs2 == EX.rd&&ID.rs2!=0)){
                 stall_counter+=2;
                 System.out.println("entered sec");
 
@@ -448,7 +439,51 @@ public class control{
                 ID = decoder(IF);
                 // continue;
             }
+            else if((ID.rs1 == MEM.rd&&ID.rs1!=0)||(ID.rs2 == MEM.rd&&ID.rs2!=0) ){
+                // mem_stall=1;
+                System.out.println("entered first");
+                stall_counter++;
+                cycle_counter++;
+                writeBack(MEM); 
+                ID = decoder(IF);
+                // continue;
+            }
+
             
+    
+
+            if(ID.which_instruction >= 30 && ID.which_instruction <= 35){
+                IF = fetch();
+                ID.branch_next_pc = PC+ID.immediate;
+                if(ID.branch_next_pc == PC){
+                    continue;
+                }
+                else{
+                    writeBack(MEM);     
+                    MEM = memory_read_write(EX);    // for ry
+                    EX = ALU(ID);
+                    ID = decoder(IF);
+                    ID.rd = 0;
+                    ID.which_instruction = 10;
+                    ID.rs1 = 0;
+                    ID.rs2 = 0;
+                    ID.ra = 0;
+                    ID.rb = 0;
+                }
+            }
+            if(ID.which_instruction == 36 || ID.which_instruction == 12){
+                IF = fetch();
+                writeBack(MEM);     
+                MEM = memory_read_write(EX);    // for ry
+                EX = ALU(ID);
+                ID = decoder(IF);
+                ID.rd = 0;
+                ID.which_instruction = 10;
+                ID.rs1 = 0;
+                ID.rs2 = 0;
+                ID.ra = 0;
+                ID.rb = 0;
+            }
 
             IF = fetch();
             

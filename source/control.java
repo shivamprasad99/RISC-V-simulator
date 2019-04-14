@@ -29,6 +29,7 @@ public class control{
     static Buffer IF = new Buffer();
     static Buffer ID = new Buffer();
     static Buffer EX = new Buffer();
+    static int stall_counter = 0;
     static Buffer MEM = new Buffer();
 
     // control(){
@@ -100,7 +101,7 @@ public class control{
         if(controlUnitObject.ySelect == 1)
             a.ry = a.memoryData;
         if(controlUnitObject.ySelect == 2)
-            a.ry = pc_object.pc_temp;
+            a.ry = pc_object.pc_temp - 4;
         if(controlUnitObject.aSelect==0)
             muxA=a.ra;
         if(controlUnitObject.aSelect==1)
@@ -221,14 +222,16 @@ public class control{
             a.rz = instruction_object.xor(muxA, muxB);
         }
         else if(a.which_instruction == 12){   // jalr
-            register_file_object.store_in_register(a.rd, PC);
+            // register_file_object.store_in_register(a.rd, PC);
             PC = pc_object.adder(PC);
+            PC -= 8;
+            // PC -= stall_counter*4;
         }
         if(a.which_instruction == 36){   // jal
-            register_file_object.store_in_register(a.rd, PC);
+            // register_file_object.store_in_register(a.rd, PC);
             PC = pc_object.adder(PC);
-            // PC -= 4; 
             PC -= 8;
+            //  PC -= stall_counter*4;
         }
         // where is srl in a.which_instruction
         else if(a.which_instruction == 23){
@@ -237,7 +240,8 @@ public class control{
         else if(a.which_instruction == 25 || a.which_instruction == 26){
             // give pc to ra and immediate value to muxB
             // ALU will do the 12 bit shifting for you
-            a.rz = instruction_object.wide_immediate_addition(muxA, muxB);
+            a.rz = instruction_object.wide_immediate_addition(muxA, muxB) -4;;
+            
         }
         else if(a.which_instruction == 30){
             if(condition_signal_beq==true){
@@ -308,6 +312,17 @@ public class control{
         return a;
     }
 
+    static int calculateTarget(Buffer a){
+        if(a.which_instruction == 30){
+                if(a.ra == a.rb)
+                    return a.immediate+PC;
+                else
+                    return PC;
+            }
+        // }
+        // if
+        return 0;
+    }
 
     static Buffer memory_read_write(Buffer a){
         setMuxValues(a);         // for muxMa
@@ -334,6 +349,7 @@ public class control{
     static void writeBack(Buffer a){
         controlUnitObject.stage5();
         setMuxValues(a);
+        System.out.println(" a.which_instruction "+a.which_instruction + " a.rd " + a.rd);
             
         if(controlUnitObject.rfWrite == 1)
             register_file_object.store_in_register(a.rd, a.ry);
@@ -402,7 +418,7 @@ public class control{
             flag = 2;
         
 
-        int stall_counter = 0;
+        
         int cycle_counter=0;
         IF = fetch();
 
@@ -411,7 +427,7 @@ public class control{
         // System.out.println("ID " + ID.which_instruction);
         // System.out.println("EX " + EX.which_instruction);
         // System.out.println("MEM " + MEM.which_instruction);
-        while(PC < memory_object.code_start + 4*5){
+        while(PC < memory_object.code_start + 4*20){
             
 
 
@@ -454,11 +470,13 @@ public class control{
 
             if(ID.which_instruction >= 30 && ID.which_instruction <= 35){
                 IF = fetch();
-                ID.branch_next_pc = PC+ID.immediate;
+                ID.branch_next_pc = calculateTarget(ID);
+
                 if(ID.branch_next_pc == PC){
                     continue;
                 }
                 else{
+                    // IF = fetch();
                     writeBack(MEM);     
                     MEM = memory_read_write(EX);    // for ry
                     EX = ALU(ID);
@@ -471,9 +489,12 @@ public class control{
                     ID.rb = 0;
                 }
             }
-            if(ID.which_instruction == 36 || ID.which_instruction == 12){
+            else if(ID.which_instruction == 36 || ID.which_instruction == 12){
+                System.out.println("jal khbkbv");
                 IF = fetch();
-                writeBack(MEM);     
+                // register_file_object.printRegisterFile();
+                writeBack(MEM); 
+                // register_file_object.printRegisterFile();
                 MEM = memory_read_write(EX);    // for ry
                 EX = ALU(ID);
                 ID = decoder(IF);
@@ -493,10 +514,10 @@ public class control{
                 if(option == 1){
                     register_file_object.printRegisterFile();
         
-                    System.out.println("IF");
-                    System.out.println("ID " + ID.which_instruction);
-                    System.out.println("EX " + EX.which_instruction);
-                    System.out.println("MEM " + MEM.which_instruction);
+                    System.out.println(" --- IF");
+                    System.out.println(" ---- ID " + ID.which_instruction);
+                    System.out.println(" ---- EX " + EX.which_instruction);
+                    System.out.println(" ----- MEM " + MEM.which_instruction);
 
                 }
             }   

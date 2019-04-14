@@ -1,4 +1,5 @@
 class Buffer{
+        int PC;
         String IR;
         int ra;
         int rb;

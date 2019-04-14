@@ -109,10 +109,10 @@ public class memory {
 
     public int loadByte(int address){
         
-        if(address < 0x0 && address >= 0xffffffff){
-            System.out.println("Memory Out of bound");
-            System.exit(0);
-        }
+        // if(address < 0x0 && address >= 0xffffffff){
+        //     System.out.println("Memory Out of bound");
+        //     System.exit(0);
+        // }
         byte bt = 0;
         if(memory_linked_hash_map.get(address) != null)
             bt = memory_linked_hash_map.get(address);
@@ -131,10 +131,10 @@ public class memory {
 
 
     public int loadWord(int address){
-        if(address < 0x0 && address >= 0xffffffff){
-            System.out.println("Memory Out of bound");
-            System.exit(0);
-        }
+        // if(address < 0x0 && address >= 0xffffffff){
+        //     System.out.println("Memory Out of bound");
+        //     System.exit(0);
+        // }
 
         byte[] bt = new byte[4];
         

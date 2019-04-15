@@ -224,12 +224,16 @@ public class control{
         else if(a.which_instruction == 12){   // jalr
             // register_file_object.store_in_register(a.rd, PC);
             PC = pc_object.adder(PC);
-            PC -= 8;
+            // PC -= 4;
             // PC -= stall_counter*4;
         }
         if(a.which_instruction == 36){   // jal
             // register_file_object.store_in_register(a.rd, PC);
             PC = pc_object.adder(PC);
+            if(MEM.which_instruction >= 30 && MEM.which_instruction <= 35){
+                PC-=4;
+            }
+            else
             PC -= 8;
             //  PC -= stall_counter*4;
         }
@@ -314,11 +318,41 @@ public class control{
 
     static int calculateTarget(Buffer a){
         if(a.which_instruction == 30){
-                if(a.ra == a.rb)
-                    return a.immediate+PC;
-                else
-                    return PC;
-            }
+            if(a.ra == a.rb)
+                return a.immediate+PC;
+            else
+                return PC;
+        }
+        else if(a.which_instruction == 31){
+            if(a.ra >= a.rb)
+                return a.immediate+PC;
+            else
+                return PC;
+        }
+        else if(a.which_instruction == 32){
+            if(a.ra >= a.rb)
+                return a.immediate+PC;
+            else
+                return PC;
+        }
+        else if(a.which_instruction == 33){
+            if(a.ra < a.rb)
+                return a.immediate+PC;
+            else
+                return PC;
+        }
+        else if(a.which_instruction == 34){
+            if(a.ra != a.rb)
+                return a.immediate+PC;
+            else
+                return PC;
+        }
+        else if(a.which_instruction == 35){
+            if(a.ra < a.rb)
+                return a.immediate+PC;
+            else
+                return PC;
+        }
         // }
         // if
         return 0;
@@ -471,7 +505,6 @@ public class control{
             if(ID.which_instruction >= 30 && ID.which_instruction <= 35){
                 IF = fetch();
                 ID.branch_next_pc = calculateTarget(ID);
-
                 if(ID.branch_next_pc == PC){
                     continue;
                 }

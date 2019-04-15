@@ -1,5 +1,5 @@
 .data 
-var1: .word 7 5 16 78
+var1: .word 2 5 16 78
 var2: .word 23 32
 var3: .word 75
 .text

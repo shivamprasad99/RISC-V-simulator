@@ -5,7 +5,6 @@ lw x10 var1
  jal x0 exit 
  fibo: addi x2 x2 -4 
  sw x1 0(x2) 
-
  beq x10 x0 fibo_of_0 
  addi x5 x0 1 
  beq x10 x5 fibo_of_1 

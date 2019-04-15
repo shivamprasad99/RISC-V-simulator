@@ -10,20 +10,20 @@ class number_to_instrucions_function{
     
     LinkedHashMap<Integer, String> integer_to_inst = new LinkedHashMap<Integer, String>();
     void set_number_to_instrucions_function(){
-        integer_to_inst.put(1, "add 00100");
-        integer_to_inst.put(2, "and 00100");
-        integer_to_inst.put(3, "or 00100");
-        integer_to_inst.put(4, "sll ");
+        integer_to_inst.put(1, "add");
+        integer_to_inst.put(2, "and");
+        integer_to_inst.put(3, "or");
+        integer_to_inst.put(4, "sll");
         integer_to_inst.put(5, "slt");
         integer_to_inst.put(6, "sltu");//
         integer_to_inst.put(7, "sra");
         integer_to_inst.put(8, "sub");
         integer_to_inst.put(9, "xor");
-        integer_to_inst.put(10,"addi 10100");
+        integer_to_inst.put(10,"addi");
         integer_to_inst.put(11,"andi");
         integer_to_inst.put(12,"jalr");
         integer_to_inst.put(13,"lb");
-        integer_to_inst.put(14,"lw 11100");
+        integer_to_inst.put(14,"lw");
         integer_to_inst.put(15,"lh");
         integer_to_inst.put(16,"lhu");//
         integer_to_inst.put(17,"lbu");//
@@ -33,12 +33,12 @@ class number_to_instrucions_function{
         integer_to_inst.put(21,"sltiu");//
         integer_to_inst.put(22,"srai");
         integer_to_inst.put(23,"srli");
-        integer_to_inst.put(24,"xori 10100");
+        integer_to_inst.put(24,"xori");
         integer_to_inst.put(25,"auipc");
         integer_to_inst.put(26,"lui");
         integer_to_inst.put(27,"sb");
         integer_to_inst.put(28,"sh");
-        integer_to_inst.put(29,"sw 11100");
+        integer_to_inst.put(29,"sw");
         integer_to_inst.put(30,"beq");
         integer_to_inst.put(31,"bge");
         integer_to_inst.put(32,"bgeu");//

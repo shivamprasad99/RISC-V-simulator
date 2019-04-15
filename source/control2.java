@@ -302,9 +302,11 @@ public class control2{
             memoryData = memory_object.loadWord(muxMa);
         }
         if(which_instruction == 27){
+            System.out.println("---------Storing ------------- "+rm);
             memory_object.storeDataByte(rm, muxMa);
         }
         if(which_instruction == 29){
+            System.out.println("---------Storing-------------- "+rm);
             memory_object.storeDataWord(rm, muxMa);
         }
     }

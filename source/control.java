@@ -166,6 +166,7 @@ public class control{
         try{
             a.rb = register_file_object.load_from_register(rs1_rs2_rd_immediate_n.get(1));
             a.rs2 = rs1_rs2_rd_immediate_n.get(1);
+            
         }catch(Exception e){}
     
         try{
@@ -185,6 +186,7 @@ public class control{
         kept ry and rz as string and if function return intger convert it to String.
     */
     static Buffer ALU(Buffer a){
+        a.rm = a.rb;
         controlUnitObject.setInstruction(a.which_instruction);
         controlUnitObject.stage3();
         setMuxValues(a);
@@ -360,8 +362,11 @@ public class control{
 
     static Buffer memory_read_write(Buffer a){
         setMuxValues(a);         // for muxMa
+        // System.out.println("----------------"+a.rm+"-----------------");
         controlUnitObject.stage4();
+        // System.out.println("----------------"+a.rm+"-----------------");
         setMuxValues(a);
+        // System.out.println("----------------"+a.rm+"-----------------");
 
         // using muxMa
         if(a.which_instruction == 13){
@@ -371,9 +376,11 @@ public class control{
             a.memoryData = memory_object.loadWord(muxMa);
         }
         if(a.which_instruction == 27){
+            System.out.println("---------Storing ------------- "+a.rm);
             memory_object.storeDataByte(a.rm, muxMa);
         }
         if(a.which_instruction == 29){
+            System.out.println("---------Storing ------------- "+a.rm);
             memory_object.storeDataWord(a.rm, muxMa);
         }   
         return a;
@@ -383,7 +390,7 @@ public class control{
     static void writeBack(Buffer a){
         controlUnitObject.stage5();
         setMuxValues(a);
-        System.out.println(" a.which_instruction "+a.which_instruction + " a.rd " + a.rd);
+        // System.out.println(" a.which_instruction "+a.which_instruction + " a.rd " + a.rd);
             
         if(controlUnitObject.rfWrite == 1)
             register_file_object.store_in_register(a.rd, a.ry);
@@ -406,7 +413,19 @@ public class control{
         }
     }
 
+    public static void print(int flag, Scanner read){
+        if(flag == 2){
+            System.out.println("Print instructions in pipeline -> 1");
+            int option = read.nextInt();
+            if(option == 1){
+                System.out.println(" --- IF");
+                System.out.println(" ---- ID " + control_and_name_of_instruction.get_control_unit_values(ID.which_instruction)  + " " + ID.rs1 + " "+ ID.rs2 + " " + ID.rd + " " + ID.immediate);
+                System.out.println(" ---- EX " + control_and_name_of_instruction.get_control_unit_values(EX.which_instruction) + " " + EX.rs1 + " "+ EX.rs2 + " " + EX.rd + " " + EX.immediate);
+                System.out.println(" ----- MEM " + control_and_name_of_instruction.get_control_unit_values(MEM.which_instruction) + " " + MEM.rs1 + " "+ MEM.rs2 + " " + MEM.rd + " " + MEM.immediate);
 
+            }
+        }
+    }
 
     public static void main(String args[]){
         lexical ltemp = new lexical();
@@ -462,46 +481,41 @@ public class control{
         // System.out.println("EX " + EX.which_instruction);
         // System.out.println("MEM " + MEM.which_instruction);
         while(PC < memory_object.code_start + 4*20){
-            
-
-
-
-
-
             writeBack(MEM);
           
             MEM = memory_read_write(EX);    // for ry
-
           
             EX = ALU(ID);
 
             ID = decoder(IF);
             
             if((ID.rs1 == EX.rd&&ID.rs1!=0)||(ID.rs2 == EX.rd&&ID.rs2!=0)){
+                // IF = fetch();
                 stall_counter+=2;
                 System.out.println("entered sec");
-
+                
+                print(flag, read);
                 cycle_counter+=2;
                 writeBack(MEM);
-
+                // System.out.println("WHAT THE FUCKWHAT THE FUCKWHAT THE FUCKWHAT THE FUCKWHAT THE FUCKWHAT THE FUCKWHAT THE FUCKWHAT THE FUCKWHAT THE FUCKWHAT THE FUCK");
                 MEM = memory_read_write(EX);    // for ry
-                writeBack(MEM);
+                
+                print(flag, read);
+
+                writeBack(MEM); 
+
                 ID = decoder(IF);
-                // continue;
             }
             else if((ID.rs1 == MEM.rd&&ID.rs1!=0)||(ID.rs2 == MEM.rd&&ID.rs2!=0) ){
                 // mem_stall=1;
                 System.out.println("entered first");
                 stall_counter++;
                 cycle_counter++;
+                print(flag, read);
                 writeBack(MEM); 
                 ID = decoder(IF);
                 // continue;
             }
-
-            
-    
-
             if(ID.which_instruction >= 30 && ID.which_instruction <= 35){
                 IF = fetch();
                 ID.branch_next_pc = calculateTarget(ID);
@@ -510,6 +524,7 @@ public class control{
                 }
                 else{
                     // IF = fetch();
+                    print(flag,read);
                     writeBack(MEM);     
                     MEM = memory_read_write(EX);    // for ry
                     EX = ALU(ID);
@@ -523,9 +538,10 @@ public class control{
                 }
             }
             else if(ID.which_instruction == 36 || ID.which_instruction == 12){
-                System.out.println("jal khbkbv");
+                //System.out.println("jal khbkbv");
                 IF = fetch();
                 // register_file_object.printRegisterFile();
+                print(flag,read);
                 writeBack(MEM); 
                 // register_file_object.printRegisterFile();
                 MEM = memory_read_write(EX);    // for ry
@@ -540,20 +556,8 @@ public class control{
             }
 
             IF = fetch();
-            
-            if(flag == 2){
-                System.out.println("Print instructions in pipeline -> 1");
-                int option = read.nextInt();
-                if(option == 1){
-                    register_file_object.printRegisterFile();
-        
-                    System.out.println(" --- IF");
-                    System.out.println(" ---- ID " + ID.which_instruction);
-                    System.out.println(" ---- EX " + EX.which_instruction);
-                    System.out.println(" ----- MEM " + MEM.which_instruction);
-
-                }
-            }   
+            print(flag, read);
+            register_file_object.printRegisterFile();
         }
         register_file_object.printRegisterFile();
         System.out.println("Print Final TextMemory(1) DataMemory(2) Both(3)");

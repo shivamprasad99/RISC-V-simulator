@@ -1,5 +1,7 @@
 .text 
-addi x4 x4 4
-auipc x10 65536 
-addi x10 x10 4
-lw x11 x10 0 
+auipc x5 65536 
+addi x5 x5 0
+addi x5 x5 32
+addi x6 x0 6
+sw x6 x5 0 
+lw x10 x5 0 

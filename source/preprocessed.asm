@@ -1,4 +1,6 @@
 .text 
-addi x4 x4 4 
-la x10 var2 
-lw x11 0(x10) 
+la x5 arr 
+addi x5 x5 32 
+addi x6 x0 6 
+sw x6 0(x5) 
+lw x10 0(x5) 

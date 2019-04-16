@@ -9,6 +9,7 @@ public class memory {
     LinkedHashMap<Integer, Byte> memory_linked_hash_map = new LinkedHashMap<Integer, Byte>();
     int code_start = 0x0;
     int data_start = 0x10000000;
+    int data_stop = 0x10000000;
     public int stack_start= 0x7afffffc;
 
     public void checker(){
@@ -26,6 +27,9 @@ public class memory {
         int a2 = 0xff;
         byte b = (byte)(a2 & value);
         memory_linked_hash_map.put(address, b);    
+        if(data_stop < address){
+            data_stop = address;
+        }
     }
 
     public void storeByte(int value){
@@ -42,6 +46,7 @@ public class memory {
         byte b = (byte)(a2 & value);
         memory_linked_hash_map.put(data_start, b);    
         data_start += 1;
+        data_stop +=1;
     }
 
     byte[] toByte(int i){
@@ -93,6 +98,9 @@ public class memory {
         storeDataByte(bt[3], address);
         address++;
         System.out.println(bt[0] + " " + bt[1] + " " + bt[2] + " "+ bt[3]);
+        if(data_stop < address){
+            data_stop = address;
+        }
     }
 
     public void storeWord(int value){
@@ -172,7 +180,7 @@ public class memory {
     }
 
     void printDataMemory(){
-        for(int i = 0x10000000; i < data_start; i+=4){
+        for(int i = 0x10000000; i <= data_stop; i+=4){
             System.out.println(i + " -> "+memory_linked_hash_map.get(i)
             + " " + memory_linked_hash_map.get(i+1)
             + " " + memory_linked_hash_map.get(i+2)

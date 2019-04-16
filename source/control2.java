@@ -174,6 +174,13 @@ public class control2{
     static void ALU(){
         if(which_instruction == 1 || which_instruction == 10 || (which_instruction >= 13 && which_instruction <= 17) || (which_instruction >= 27 && which_instruction <= 29)){
             rz = instruction_object.add(muxA, muxB);
+        }  
+        else if(which_instruction == 37){
+            rz = instruction_object.mul(muxA, muxB);
+            System.out.println("---------------rz-----------" + rz);
+        }  
+        else if(which_instruction == 38){
+            rz = instruction_object.div(muxA, muxB);
         }           
         else if(which_instruction == 2 || which_instruction == 11){
             rz = instruction_object.and(muxA, muxB);

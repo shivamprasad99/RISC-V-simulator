@@ -79,7 +79,7 @@ public class controlUnit{
 
 
     void stage4(){
-        if(whichInstruction<12||(whichInstruction>17&&whichInstruction<27)) ySelect=0;      //0 for rz
+        if(whichInstruction<12||whichInstruction==37||whichInstruction==38||(whichInstruction>17&&whichInstruction<27)) ySelect=0;      //0 for rz
         else if(whichInstruction==12||whichInstruction==36) ySelect =2; //2 for return address
         else ySelect=1; //1 for loading ry from memory , no effect for branching instructions
 

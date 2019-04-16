@@ -44,7 +44,7 @@ public class preLexical {
                             while(nToken==13 || nToken==11){
                                 // store in memory here
                                 if(nToken==11)
-                                    mem_obj.storeInitialWord(Integer.parseInt(lexer.yytext(),16));
+                                    mem_obj.storeInitialWord(Integer.parseInt(lexer.yytext().substring(2),16));
                                 if(nToken==13){
                                     System.out.println(" to store " + Integer.parseInt(lexer.yytext())+"...");
                                     mem_obj.storeInitialWord(Integer.parseInt(lexer.yytext()));
@@ -72,6 +72,47 @@ public class preLexical {
             lexer = new Yylex(br);
             nToken = lexer.yylex();
             while(nToken>=0){
+                if(nToken == 9 && lexer.yytext().equals("la")){
+                    String repl = "addi";
+                    String reg;
+                    nToken = lexer.yylex();
+                    repl += " ";
+                    repl += lexer.yytext();
+                    reg = lexer.yytext();
+                    nToken = lexer.yylex();
+                    if(nToken == 15){
+                        wr.write(repl+" ");
+                        String x=lexer.yytext();
+
+                        StringBuffer y=new StringBuffer();
+                        int i;
+    //                     System.out.println(x);
+
+                        for(i=0;i<x.length();i++){
+                            if(x.charAt(i)=='(')
+                                break;
+                            y.append(x.charAt(i));
+                        }
+                        i++;
+    //                    System.out.println(y);
+                        StringBuffer z= new StringBuffer();
+                        for(;i<x.length();i++){
+                            if(x.charAt(i)==')') break;
+                            else z.append(x.charAt(i));
+                        }
+    //                    System.out.println(z);
+
+                        wr.write(z.append(" ").append(y).toString());
+                        wr.write(" ");
+                    }
+                    else{
+                        wr.write("auipc "+reg+" 65536");
+                        wr.write("\n");
+                        wr.write(repl+" "+lexer.yytext());
+                        
+                    }
+                    nToken = lexer.yylex();
+                }
                 if(nToken == 4 && lexer.yytext().equals("lw")){
                     String repl = lexer.yytext();
                     String reg;
@@ -156,7 +197,7 @@ public class preLexical {
                 if(nToken >=3 && nToken <= 8){
                     programcounter += 4;
                 }
-                if(nToken == 4 && lexer.yytext().equals("lw")){
+                if(nToken == 4 && (lexer.yytext().equals("lw")||lexer.yytext().equals("addi"))){
                     String repl = lexer.yytext();
                     String reg,reg1;
                     nToken = lexer.yylex();

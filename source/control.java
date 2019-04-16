@@ -193,7 +193,13 @@ public class control{
             
         if(a.which_instruction == 1 || a.which_instruction == 10 || (a.which_instruction >= 13 && a.which_instruction <= 17) || (a.which_instruction >= 27 && a.which_instruction <= 29)){
             a.rz = instruction_object.add(muxA, muxB);
-        }           
+        }    
+        else if(a.which_instruction == 37){
+            a.rz = instruction_object.mul(muxA, muxB);
+        }  
+        else if(a.which_instruction == 38){
+            a.rz = instruction_object.div(muxA, muxB);
+        }   
         else if(a.which_instruction == 2 || a.which_instruction == 11){
             a.rz = instruction_object.and(muxA, muxB);
             

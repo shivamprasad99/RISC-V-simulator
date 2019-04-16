@@ -46,6 +46,8 @@ class number_to_instrucions_function{
         integer_to_inst.put(34,"bne");
         integer_to_inst.put(35,"bltu");//
         integer_to_inst.put(36,"jal");
+        integer_to_inst.put(37,"mul");
+        integer_to_inst.put(38,"div");
     }
     
 

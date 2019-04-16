@@ -118,6 +118,8 @@ public class stageTwoDecode{
 		}
 
     	private static void initialize(){
+				ins.put("Rmul",new Data("0110011","0000001","000"));
+				ins.put("Rdiv",new Data("0110011","0000001","100"));
 		        ins.put("Radd",new Data("0110011","0000000","000"));
 		        ins.put("Rand",new Data("0110011","0000000","111"));
 		        ins.put("Ror",new Data("0110011","0000000","110"));
@@ -196,8 +198,10 @@ public class stageTwoDecode{
                 instruction_to_integer.put("blt", 33);
                 instruction_to_integer.put("bne", 34);
                 instruction_to_integer.put("bltu", 35);
-                instruction_to_integer.put("jal", 36);
-                return instruction_to_integer.get(instruction);
+				instruction_to_integer.put("jal", 36);
+				instruction_to_integer.put("mul",37);
+				instruction_to_integer.put("div",38);				
+				return instruction_to_integer.get(instruction);
 
 			}
 

@@ -53,4 +53,11 @@ class instructions{
     public int sw(int ra, int rb){
         return ra+rb;
     }
+    public int mul(int ra,int rb){
+        // System.out.println("ENTERED MULTIPLY" + ra + rb);
+        return ra*rb;
+    }
+    public int div(int ra,int rb){
+        return ra/rb;
+    }
 }

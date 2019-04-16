@@ -20,13 +20,13 @@ public void adjustlineno(){
 
 %}
 
-rType =                                          add|and|or|sll|slt|sltu|sra|srl|sub|xor
+rType =                                          add|and|or|sll|slt|sltu|sra|srl|sub|xor|mul|div
 iType =                                          addi|andi|jalr|lb|lw|lh|lwu|ori|slli|srli|xori|lbu|lhu|slti|sltiu|srai
 uType =                                          auipc|lui
 sType =                                          sb|sh|sw
 sbType =                                         beq|bge|bgeu|blt|bne|bltu
 ujType  =                                        jal
-pseudo =                                         li|la
+pseudo =                                         la
 comment =                                        "#".*[^\n]
 %standalone
 %public

@@ -56,6 +56,8 @@ public class lexical{
         ins.put("bne",new Data("1100011","","001"));
         ins.put("bltu",new Data("1100011","","110"));
         ins.put("jal",new Data("1101111","",""));
+        ins.put("mul",new Data("0110011","0000001","000"));
+        ins.put("div",new Data("0110011","0000001","100"));
     }
 
     private static String registerToBits(String reg){

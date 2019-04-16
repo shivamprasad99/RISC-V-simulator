@@ -17,7 +17,7 @@ public class preLexical {
             BufferedWriter wr = new BufferedWriter((new FileWriter(new File("./preprocessed.asm"))));
             int nToken = lexer.yylex();
             while(nToken>=0){
-                if(nToken == 18) {
+                if(nToken == 18 || nToken == 0) {
                     wr.write("\n");
                     while (nToken == 18 || nToken == 0) {
                         nToken = lexer.yylex();
@@ -60,8 +60,8 @@ public class preLexical {
                         nToken = lexer.yylex();
                     }
                 }
-
-                wr.write(lexer.yytext());
+                if(nToken != 18)
+                    wr.write(lexer.yytext());
                 wr.write(" ");
                 nToken = lexer.yylex();
             }

@@ -26,6 +26,8 @@ public class control2{
     static controlUnit controlUnitObject = new controlUnit();
     static int control_inst = 0, alu_inst = 0, data_inst = 0;
     
+    static direct_mapped_cache inst_cache = new direct_mapped_cache(64,16);
+    static direct_mapped_cache data_cache = new direct_mapped_cache(64,16);
 
     // control(){
     //     pc_value = 0;
@@ -117,7 +119,7 @@ public class control2{
         immediate = 0;
         IR = "";
         for(int i = 0; i < 4; i++){
-            int val = memory_object.loadByte(pc_value);
+            int val = inst_cache.loadByte(pc_value,memory_object);
             String currentBinary = Integer.toBinaryString(256 + val);
             String s = currentBinary.substring(currentBinary.length() - 8);
             IR = IR + s;
@@ -330,18 +332,18 @@ public class control2{
     static void memory_read_write(){
         // using muxMa
         if(which_instruction == 13){
-            memoryData = memory_object.loadByte(muxMa);
+            memoryData = data_cache.loadByte(muxMa,memory_object);
         }
         if(which_instruction == 14){
-            memoryData = memory_object.loadWord(muxMa);
+            memoryData = data_cache.loadWord(muxMa,memory_object);
         }
         if(which_instruction == 27){
             System.out.println("---------Storing ------------- "+rm);
-            memory_object.storeDataByte(rm, muxMa);
+            data_cache.storeDataByte(rm, muxMa,memory_object);
         }
         if(which_instruction == 29){
             System.out.println("---------Storing-------------- "+rm);
-            memory_object.storeDataWord(rm, muxMa);
+            data_cache.storeDataWord(rm, muxMa,memory_object);
         }
     }
 
@@ -436,6 +438,8 @@ public class control2{
             print_record();
         }
         catch(Exception e){}
+        System.out.println(data_cache.hits + " miss "  + data_cache.misses + " conflict " + data_cache.conflict_misses + " cold " + data_cache.cold_misses); 
+        System.out.println(inst_cache.hits + " miss "  + inst_cache.misses + " conflict " + inst_cache.conflict_misses + " cold " + inst_cache.cold_misses); 
         register_file_object.printRegisterFile();
         System.out.println("Print Final TextMemory(1) DataMemory(2) Both(3)");
         int c = read.nextInt();

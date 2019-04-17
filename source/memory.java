@@ -179,8 +179,12 @@ public class memory {
     }
 
     void printDataMemory(){
+        System.out.println(data_stop);
+
         for(int i = 0x10000000; i <= data_stop; i+=4){
             if(memory_linked_hash_map.get(i)!=null){
+                if(i > 0x7FFFFFFC || i < 0x10000000)
+                    break;
                 System.out.println(i + " -> "+memory_linked_hash_map.get(i)
                 + " " + memory_linked_hash_map.get(i+1)
                 + " " + memory_linked_hash_map.get(i+2)
@@ -188,28 +192,5 @@ public class memory {
             }
         }
     }
-
-    // public static String load_string_from_memory(int address){
-    //     checker();
-    //     return memory_linked_hash_map.get(address);
-    // }
-
-
-    // public static void store_code_memory(String value_to_be_stored){
-    //     checker();
-    //     memory_linked_hash_map.put(code_start, value_to_be_stored);
-    //     System.out.println(code_start + " " + value_to_be_stored);
-    // }
-
-    // public static void store_data_memory(String value_to_be_stored){
-    //     checker();
-    //     memory_linked_hash_map.put(data_start, value_to_be_stored);
-    //     System.out.println(data_start + " " + value_to_be_stored);
-    // }
-    // public static void store_stack_memory(String value_to_be_stored){
-    //     checker();
-    //     memory_linked_hash_map.put(stack_start, value_to_be_stored);
-    //     System.out.println(stack_start + " " + value_to_be_stored);
-    // }
 
 }

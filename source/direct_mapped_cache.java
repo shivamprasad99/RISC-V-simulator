@@ -147,6 +147,7 @@ public class direct_mapped_cache {
                     else {
                         this.instruction_cache[index].data[i_itr_1] = new Byte(b); // let it be default value
                     }
+                    System.out.println("cache data-------------- >>>>>" + this.instruction_cache[index].data[i_itr_1]);
                 }
             }
         }
@@ -164,19 +165,21 @@ public class direct_mapped_cache {
                     
                     this.instruction_cache[index].data[i_itr_1] = new Byte(b); // let it be default value
                 }
+                System.out.println("cache data-------------- >>>>>" + this.instruction_cache[index].data[i_itr_1]);
             }
         }
-
-        int output = this.instruction_cache[index].data[block_offset] & 0xff;
-        String hex = Integer.toHexString(output);
-        String[] arr = hex.split(""); 
-        int a = 0;
-        for(int i =0; i < hex.length(); i++){
-            int temp = (int)Math.pow(16, i);
-            int val = Integer.parseInt(arr[hex.length() - i - 1], 16);
-            a += temp*val;
-        }
-        return a;
+        return memory_object.loadByte(address);
+        // int output = this.instruction_cache[index].data[block_offset] & 0xff;
+        // String hex = Integer.toHexString(output);
+        // String[] arr = hex.split(""); 
+        // int a = 0;
+        // for(int i =0; i < hex.length(); i++){
+        //     int temp = (int)Math.pow(16, i);
+        //     int val = Integer.parseInt(arr[hex.length() - i - 1], 16);
+        //     a += temp*val;
+        // }
+        // System.out.println("asli data returned ---->>"+ a);
+        // return a;
 
     }
 
@@ -244,18 +247,18 @@ public class direct_mapped_cache {
             // but take care of this in data_cache
             bt[i] = this.instruction_cache[index].data[block_offset+i];
         }
-
-        int removing_negative[] = new int[4];
-        for(int i = 0; i < 4; i++){
-            removing_negative[i] = bt[i] & 0xff;
-        }
-        String[] hex = new String[4];
-        hex[0] = Integer.toHexString(removing_negative[0]);
-        hex[1] = Integer.toHexString(removing_negative[1]);
-        hex[2] = Integer.toHexString(removing_negative[2]);
-        hex[3] = Integer.toHexString(removing_negative[3]);
-        int b = toInt(hex);
-        return b;
+        return memory_object.loadWord(address);
+        // int removing_negative[] = new int[4];
+        // for(int i = 0; i < 4; i++){
+        //     removing_negative[i] = bt[i] & 0xff;
+        // }
+        // String[] hex = new String[4];
+        // hex[0] = Integer.toHexString(removing_negative[0]);
+        // hex[1] = Integer.toHexString(removing_negative[1]);
+        // hex[2] = Integer.toHexString(removing_negative[2]);
+        // hex[3] = Integer.toHexString(removing_negative[3]);
+        // int b = toInt(hex);
+        // return b;
 
     }
 

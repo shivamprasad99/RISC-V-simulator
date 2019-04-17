@@ -45,7 +45,7 @@ public class control{
     static int data_stall = 0, control_stall = 0;
     static int data_hazard = 0, control_hazard = 0; 
     static int control_inst = 0, alu_inst = 0, data_inst = 0;
-    static int no_cycle = 4;
+    static int no_cycle = 0;
     // int cycle_counter=0;
     // int ex_stall=0,mem_stall=0;
         
@@ -66,9 +66,9 @@ public class control{
 
     static void print_record()throws IOException{
         BufferedWriter writer = new BufferedWriter(new FileWriter("./record.txt"));
-        writer.write("Total number of cycles " + (no_cycle+data_stall) + "\n");
+        writer.write("Total number of cycles " + (no_cycle) + "\n");
         writer.write("Total instructions " + (control_inst + alu_inst + data_inst) + "\n");
-        writer.write("CPI "+ (double)(no_cycle+data_stall)/(control_inst + alu_inst + data_inst) + "\n");
+        writer.write("CPI "+ (double)(no_cycle)/(control_inst + alu_inst + data_inst) + "\n");
         writer.write("Number of Data-transfer instructions "+data_inst+"\n");
         writer.write("Number of ALU instructions " + alu_inst + "\n");
         writer.write("Number of Control instructions " +control_inst+"\n");
@@ -146,7 +146,7 @@ public class control{
 
 
     static Buffer fetch(){
-        no_cycle++;
+        // no_cycle++;
         controlUnitObject.stage1();
         Buffer a = new Buffer();
         setMuxValues(a);
@@ -548,6 +548,7 @@ public class control{
         // System.out.println("EX " + EX.which_instruction);
         // System.out.println("MEM " + MEM.which_instruction);
         while(PC < memory_object.code_start + 4*5){
+            no_cycle++;
             writeBack(MEM);
           
             MEM = memory_read_write(EX);    // for ry
@@ -558,6 +559,7 @@ public class control{
             
             if((ID.rs1 == EX.rd&&ID.rs1!=0)||(ID.rs2 == EX.rd&&ID.rs2!=0)){
                 // IF = fetch();
+                no_cycle+=2;
                 data_stall+=2;
                 data_hazard++;
                 //stall_counter+=2;
@@ -577,6 +579,7 @@ public class control{
             else if((ID.rs1 == MEM.rd&&ID.rs1!=0)||(ID.rs2 == MEM.rd&&ID.rs2!=0) ){
                 // mem_stall=1;
                 data_stall++;
+                no_cycle++;
                 data_hazard++;
                 System.out.println("entered first");
                 //stall_counter++;
@@ -610,9 +613,11 @@ public class control{
                     ID.ra = 0;
                     ID.rb = 0;
                     ID.is_flush = 1;
+                    no_cycle++;
                 }
             }
             else if(ID.which_instruction == 36 || ID.which_instruction == 12){
+                no_cycle++;
                 control_stall++;
                 control_hazard++;
                 //stall_counter++;
@@ -640,8 +645,8 @@ public class control{
             print_record();
         }
         catch(Exception e){}
-        System.out.println(data_cache.hits + " miss "  + data_cache.misses + " cinflict " + data_cache.conflict_misses + " cold " + data_cache.cold_misses); 
-        System.out.println(inst_cache.hits + " miss "  + inst_cache.misses + " cinflict " + inst_cache.conflict_misses + " cold " + inst_cache.cold_misses); 
+        System.out.println(data_cache.hits + " miss "  + data_cache.misses + " conflict " + data_cache.conflict_misses + " cold " + data_cache.cold_misses); 
+        System.out.println(inst_cache.hits + " miss "  + inst_cache.misses + " conflict " + inst_cache.conflict_misses + " cold " + inst_cache.cold_misses); 
         register_file_object.printRegisterFile();
         System.out.println("Print Final TextMemory(1) DataMemory(2) Both(3)");
         int c = read.nextInt();
@@ -655,6 +660,7 @@ public class control{
 
             System.out.println("-------Data Memory--------\n");
             memory_object.printDataMemory();
+            return;
         }
 
     }

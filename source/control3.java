@@ -36,6 +36,16 @@ public class control3{
     static Buffer3 EX = new Buffer3();
     static Buffer3 MEM = new Buffer3();
 
+    static int branch_mis = 0;
+    static int data_stall = 0, control_stall = 0;
+    static int data_hazard = 0, control_hazard = 0; 
+    static int control_inst = 0, alu_inst = 0, data_inst = 0;
+    static int no_cycle = 4;
+
+
+    static direct_mapped_cache inst_cache = new direct_mapped_cache(64,16);
+    static direct_mapped_cache data_cache = new direct_mapped_cache(64,16);
+
     // control(){
     //     pc_value = 0;
     //     IR = "";
@@ -49,8 +59,24 @@ public class control3{
     // }
 
 
-
     // seperate line_no and machine code.
+
+    static void print_record()throws IOException{
+        BufferedWriter writer = new BufferedWriter(new FileWriter("./record.txt"));
+        writer.write("Total number of cycles " + (no_cycle+data_stall) + "\n");
+        writer.write("Total instructions " + (control_inst + alu_inst + data_inst) + "\n");
+        writer.write("CPI "+ (double)(no_cycle+data_stall)/(control_inst + alu_inst + data_inst) + "\n");
+        writer.write("Number of Data-transfer instructions "+data_inst+"\n");
+        writer.write("Number of ALU instructions " + alu_inst + "\n");
+        writer.write("Number of Control instructions " +control_inst+"\n");
+        writer.write("Number of stalls in the pipeline " + (data_stall + control_stall) + "\n");
+        writer.write("Number of data hazards " + data_hazard + "\n");
+        writer.write("Number of control hazards " + control_hazard+ "\n");
+        writer.write("Number of stalls due to data hazards " + data_stall+ "\n");
+        writer.write("Number of stalls due to control hazards " + control_stall+ "\n");
+        writer.write("Number of branch mispredictions " + branch_mis + "\n");
+        writer.close();
+    }
     
     static String seperate_line_and_machineCode(String line){
         char[] char_line = line.toCharArray();  // convert String to char_array
@@ -134,13 +160,14 @@ public class control3{
 
 
     static Buffer3 fetch(){
+
         controlUnitObject.stage1();
         Buffer3 a = new Buffer3();
         setMuxValues(a);
         a.immediate = 0;
         a.IR = "";
         for(int i = 0; i < 4; i++){
-            int val = memory_object.loadByte(PC);
+            int val = inst_cache.loadByte(PC,memory_object);
             String currentBinary = Integer.toBinaryString(256 + val);
             String s = currentBinary.substring(currentBinary.length() - 8);
             a.IR = a.IR + s;
@@ -209,47 +236,69 @@ public class control3{
     */
     static Buffer3 ALU(Buffer3 a){
         
+        if(a.is_flush != 1){
+            if(a.which_instruction == 12 || a.which_instruction == 36 || (a.which_instruction >= 30 && a.which_instruction <= 35) )
+                control_inst++;
+            if((a.which_instruction >= 13 && a.which_instruction <= 17) || (a.which_instruction >= 27 && a.which_instruction <= 29)){
+                data_inst++;
+            }
+        }
+        if(a.is_flush == 1)
+            alu_inst -= 1;
 
         controlUnitObject.setInstruction(a.which_instruction);
         controlUnitObject.stage3(a.forwarding1,a.forwarding2);
         setMuxValues(a);
-        System.out.println("RM value: "+a.rm);            
+        // System.out.println("RM value: "+a.rm); 
+        if(a.which_instruction == 1 || a.which_instruction == 10)
+            alu_inst++;
+
         if(a.which_instruction == 1 || a.which_instruction == 10 || (a.which_instruction >= 13 && a.which_instruction <= 17) || (a.which_instruction >= 27 && a.which_instruction <= 29)){
             a.rz = instruction_object.add(muxA, muxB);
         }           
         else if(a.which_instruction == 2 || a.which_instruction == 11){
+            alu_inst++;
             a.rz = instruction_object.and(muxA, muxB);
             
         }
         else if(a.which_instruction == 37){
+            alu_inst++;
             a.rz = instruction_object.mul(muxA, muxB);
         }  
         else if(a.which_instruction == 38){
+            alu_inst++;
             a.rz = instruction_object.div(muxA, muxB);
         }
         else if(a.which_instruction == 3 || a.which_instruction == 18){
+            alu_inst++;
             a.rz = instruction_object.or_(muxA, muxB);
             
         }
         else if(a.which_instruction == 4 || a.which_instruction == 19){
+            alu_inst++;
             a.rz = instruction_object.sll(muxA, muxB);
             
         }
         else if(a.which_instruction == 5 || a.which_instruction == 20){
+            alu_inst++;
             a.rz = instruction_object.slt(muxA, muxB);
             
         }
         else if(a.which_instruction == 6 || a.which_instruction == 21){
             a.rz = instruction_object.sltu(muxA, muxB);
+            alu_inst++;
             
         }
         else if(a.which_instruction == 7 || a.which_instruction == 22){
+            alu_inst++;            
             a.rz = instruction_object.sra(muxA, muxB);   
         }
         else if(a.which_instruction == 8){
+            alu_inst++;            
             a.rz = instruction_object.sub(muxA, muxB);
         }
         else if(a.which_instruction == 9 || a.which_instruction == 24){
+            alu_inst++;            
             a.rz = instruction_object.xor(muxA, muxB);
         }
         else if(a.which_instruction == 12){   // jalr
@@ -270,11 +319,13 @@ public class control3{
         }
         // where is srl in a.which_instruction
         else if(a.which_instruction == 23){
+            alu_inst++;            
             a.rz = instruction_object.srl(muxA, muxB);
         }
         else if(a.which_instruction == 25 || a.which_instruction == 26){
             // give pc to ra and immediate value to muxB
             // ALU will do the 12 bit shifting for you
+            alu_inst++;            
             a.rz = instruction_object.wide_immediate_addition(muxA, muxB);
         }
         else if(a.which_instruction == 30){
@@ -343,7 +394,7 @@ public class control3{
                 PC -= 8;
             }
         }
-        System.out.println("Executed instruction rz: " +a.rz+"which Instruction "+a.which_instruction );
+        // System.out.println("Executed instruction rz: " +a.rz+"which Instruction "+a.which_instruction );
 
         return a;
     }
@@ -356,16 +407,18 @@ public class control3{
 
         // using muxMa
         if(a.which_instruction == 13){
-            a.memoryData = memory_object.loadByte(muxMa);
+            a.memoryData = data_cache.loadByte(muxMa,memory_object);
         }
         if(a.which_instruction == 14){
-            a.memoryData = memory_object.loadWord(muxMa);
+            a.memoryData = data_cache.loadWord(muxMa,memory_object);
         }
         if(a.which_instruction == 27){
-            memory_object.storeDataByte(muxRm, muxMa);
+            System.out.println("---------Storing ------------- "+a.rm);
+            data_cache.storeDataByte(a.rm, muxMa,memory_object);
         }
         if(a.which_instruction == 29){
-            memory_object.storeDataWord(muxRm, muxMa);
+            System.out.println("---------Storing ------------- "+a.rm);
+            data_cache.storeDataWord(a.rm, muxMa,memory_object);
         }  
         setMuxValues(a);
         a.ry=muxY; 
@@ -501,20 +554,21 @@ public class control3{
             flag = 2;
         
 
-        int stall_counter = 0;
-        int cycle_counter=0;
+        
         IF = fetch();
 
         int ex_stall=0,mem_stall=0;
-        int stallCounter=0;
-        int cycleCounter=0;
+        // int stallCounter=0;
+        // int cycleCounter=0;
 
         // System.out.println("IF");
         // System.out.println("ID " + ID.which_instruction);
         // System.out.println("EX " + EX.which_instruction);
         // System.out.println("MEM " + MEM.which_instruction);
+
         while(PC < memory_object.code_start + 4*5){
-            cycleCounter++;
+            no_cycle++;
+            System.out.println("INcreasing Cycle--------");
 
             writeBack(MEM);
             m2e=MEM.ry;
@@ -525,7 +579,7 @@ public class control3{
             EX = ALU(ID);
         
             e2e=EX.rz;
-            System.out.println("RZ :" +EX.rz+" "+EX.ra+" "+muxA+" "+muxB+" "+controlUnitObject.aSelect+" "+controlUnitObject.bSelect);
+            // System.out.println("RZ :" +EX.rz+" "+EX.ra+" "+muxA+" "+muxB+" "+controlUnitObject.aSelect+" "+controlUnitObject.bSelect);
 
             if(EX.which_instruction>25&&EX.which_instruction<=29&&EX.rs2==MEM.rd){
                 EX.rm=MEM.ry;
@@ -535,24 +589,28 @@ public class control3{
             ID = decoder(IF);
             
             if((ID.which_instruction<30&& ID.which_instruction!=12)||ID.which_instruction>36){
-                
+                int flag_data_hazard=0;
                 if((ID.rs1 == MEM.rd&&ID.rs1!=0&&ID.rs1!=-1)||(ID.rs2 == MEM.rd&&ID.rs2!=0&&ID.rs2!=-1) ){
-
-                    System.out.println("Welcome2 "+MEM.rd+" "+ID.rs1+" "+ID.rs2);
+                    
+                    // System.out.println("Welcome2 "+MEM.rd+" "+ID.rs1+" "+ID.rs2);
                     
                     if(ID.rs1 == MEM.rd){
+                        data_hazard++;
+                        flag_data_hazard=1;
                         ID.forwarding1=3;
                         System.out.println("rs1 copy");
                         }
 
                     if(ID.rs2 == MEM.rd){
+                        data_hazard++;
+                        flag_data_hazard=2;
                         // if(ID.which_instruction>25&&ID.which_instruction<29){
                         //     ID.forwarding=5;
                         // }
                         // else 
                         if(ID.which_instruction>25&&ID.which_instruction<=29){
                             //    ID.forwarding2=5;
-                            System.out.println("HI--------------"+m2m);
+                            // System.out.println("HI--------------"+m2m);
                             ID.rm=m2m;
                         }
                         else 
@@ -562,13 +620,15 @@ public class control3{
                 
                 if((ID.rs1 == EX.rd&&ID.rs1!=0&&ID.rs1!=-1)||(ID.rs2 == EX.rd&&ID.rs2!=0&&ID.rs2!=-1)){
                     
-                    System.out.println("Welcome "+EX.rd+" "+ID.rs1+" "+ID.rs2);
+                    // System.out.println("Welcome "+EX.rd+" "+ID.rs1+" "+ID.rs2);
                     if(!(EX.which_instruction>12&&EX.which_instruction<18))     //not load instructions
                     {
                         if(ID.rs1==EX.rd){
+                            if(flag_data_hazard!=1) data_hazard++;
                             ID.forwarding1=1;
                         }
                         if(ID.rs2==EX.rd){
+                            if(flag_data_hazard!=2) data_hazard++;
                             if(ID.which_instruction>25&&ID.which_instruction<=29){
                                 System.out.println("HI.........."+ID.ra);
                                 // ID.rb=EX.rz;
@@ -584,16 +644,20 @@ public class control3{
                         MEM = memory_read_write(EX);    // for ry
                         m2m=MEM.ry;
                         ID=decoder(IF);
-                        stallCounter++;
-                        cycleCounter++;
+                        data_stall++;
+                        no_cycle++;
                         
                         if(ID.rs1==MEM.rd){
+                            if(flag_data_hazard!=1) data_hazard++;
+
                             ID.forwarding1=3;
                             System.out.println("rs1 copy");
 
                         }
 
                         if(ID.rs2==MEM.rd){
+                            if(flag_data_hazard!=1) data_hazard++;
+
                             ID.forwarding2=4;
                             System.out.println("rs2 copy");
                             
@@ -609,17 +673,20 @@ public class control3{
             else if(ID.which_instruction >= 30 && ID.which_instruction <= 35){
 
                 IF = fetch();
-
+                int flag_data_hazard=0;
                 if((ID.rs1 == MEM.rd&&ID.rs1!=0&&ID.rs1!=-1)||(ID.rs2 == MEM.rd&&ID.rs2!=0&&ID.rs2!=-1) ){
-
                     System.out.println("Welcome2 "+MEM.rd+" "+ID.rs1+" "+ID.rs2);
                     
                     if(ID.rs1 == MEM.rd){
+                        data_hazard++;
+                        flag_data_hazard=1;                    
                         ID.ra=MEM.ry;
                         System.out.println("rs1 copy");
                         }
 
                     if(ID.rs2 == MEM.rd){
+                        data_hazard++;
+                        flag_data_hazard=2;
                         // if(ID.which_instruction>25&&ID.which_instruction<29){
                         //     ID.forwarding=5;
                         // }
@@ -635,27 +702,35 @@ public class control3{
                     if(!(EX.which_instruction>12&&EX.which_instruction<18))     //not load instructions
                     {
                         if(ID.rs1==EX.rd){
+                            if(flag_data_hazard!=1) data_hazard++;
+
                             ID.ra=EX.rz;
                         }
                         if(ID.rs2==EX.rd){
+                            if(flag_data_hazard!=2) data_hazard++;
                             ID.rb=EX.rz;
                         }
                     }                                            //end for non load instructions
-                    else {                               //stalling if load then operate and new inst is not store
+                    else {
+                                                       //stalling if load then operate and new inst is not store
                         m2e=MEM.ry;
             
                         MEM = memory_read_write(EX);    // for ry
                         m2m=MEM.ry;   
                         // ID=decoder(IF);
-                        stallCounter++;
-                        cycleCounter++;
+                        data_stall++;
+                        no_cycle++;
 
                         if(ID.rs1==MEM.rd){
+                            if(flag_data_hazard!=1) data_hazard++;
+
                             ID.ra=MEM.ry;
                             System.out.println("rs1 copy");
                         }
 
                         if(ID.rs2==MEM.rd){
+                            if(flag_data_hazard!=2) data_hazard++;
+
                             ID.rb=MEM.ry;
                             System.out.println("rs2 copy");
                             
@@ -663,14 +738,16 @@ public class control3{
                     }                                   //end for data dependency
                 }
                 
-                System.out.println("Branch ra and rb "+ID.ra+" "+ID.rb);
+                // System.out.println("Branch ra and rb "+ID.ra+" "+ID.rb);
                 ID.branch_next_pc = calculateTarget(ID);
                 if(ID.branch_next_pc == PC){
                     continue;
                 }
                 else{
-                    stallCounter++;
-                    cycleCounter++;
+                    branch_mis++;
+                    control_stall++;
+                    control_hazard++;
+                    no_cycle++;
                     // IF = fetch();
                     print(flag,read);
                     writeBack(MEM);     
@@ -687,11 +764,12 @@ public class control3{
                     ID.rs2 = 0;
                     ID.ra = 0;
                     ID.rb = 0;
+                    ID.is_flush = 1;
                 }
             }                                           //end for branch instructions
             else if(ID.which_instruction == 36 ){
 
-                               
+                control_hazard++;
                 //System.out.println("jal khbkbv");
                 IF = fetch();
                 // PC=PC-4;
@@ -714,11 +792,14 @@ public class control3{
                 ID.rs2 = 0;
                 ID.ra = 0;
                 ID.rb = 0;
+                ID.is_flush = 1;
             }
             else if(ID.which_instruction==12){
+                control_hazard++;
                 IF=fetch();
+                int flag_data_hazard=0;
                 if((ID.rs1 == MEM.rd&&ID.rs1!=0&&ID.rs1!=-1) ){
-
+                    data_hazard++;flag_data_hazard=1;
                     System.out.println("Welcome2 "+MEM.rd+" "+ID.rs1+" "+ID.rs2);
                     
                     if(ID.rs1 == MEM.rd){
@@ -727,7 +808,7 @@ public class control3{
                         }
                 }
                 if((ID.rs1 == EX.rd&&ID.rs1!=0&&ID.rs1!=-1)){     //start of data dependency
-                    
+                    if(flag_data_hazard!=1) data_hazard++;
                     System.out.println("Welcome "+EX.rd+" "+ID.rs1+" "+ID.rs2);
                     if(!(EX.which_instruction>12&&EX.which_instruction<18))     //not load instructions
                     {
@@ -738,8 +819,8 @@ public class control3{
                     else if(ID.which_instruction<=25||ID.which_instruction>29){                               //stalling if load then operate and new inst is not store
                         MEM= memory_read_write(EX);
                         // ID=decoder(IF);
-                        stallCounter++;
-                        cycleCounter++;
+                        data_stall++;
+                        no_cycle++;
 
                         if(ID.rs1==MEM.rd){
                             ID.ra=MEM.ry;
@@ -774,41 +855,41 @@ public class control3{
                 ID.rs2 = 0;
                 ID.ra = 0;
                 ID.rb = 0;
-
+                ID.is_flush = 1;
 
 
 
             }
 
             IF = fetch();
-            
+            print(flag,read);
             if(flag == 2){
-                System.out.println("Print instructions in pipeline -> 1");
-                int option = read.nextInt();
-                if(option == 1){
+              
                     register_file_object.printRegisterFile();
         
-                    System.out.println("IF");
-                    System.out.println("ID " + ID.which_instruction);
-                    System.out.println("EX " + EX.which_instruction);
-                    System.out.println("MEM " + MEM.which_instruction);
-
-                }
             }   
         }
+        no_cycle=no_cycle-4;
+        // System.out.println("No of data hazards"+data_hazard);
+        try{
+            print_record();
+        }
+        catch(Exception e){}
+        System.out.println(data_cache.hits + " miss "  + data_cache.misses + " conflict " + data_cache.conflict_misses + " cold " + data_cache.cold_misses); 
+        System.out.println(inst_cache.hits + " miss "  + inst_cache.misses + " conflict " + inst_cache.conflict_misses + " cold " + inst_cache.cold_misses); 
         register_file_object.printRegisterFile();
         System.out.println("Print Final TextMemory(1) DataMemory(2) Both(3)");
-        // int c = read.nextInt();
-        // if(c == 1)
-        //     memory_object.printTextMemory();
-        // if(c==2)
-        //     memory_object.printDataMemory();
-        // if(c == 3){
-        //     System.out.println("-------Text Memory--------\n");
-        //     memory_object.printTextMemory();
+        int c = read.nextInt();
+        if(c == 1)
+            memory_object.printTextMemory();
+        if(c==2)
+            memory_object.printDataMemory();
+        if(c == 3){
+            System.out.println("-------Text Memory--------\n");
+            memory_object.printTextMemory();
 
-        //     System.out.println("-------Data Memory--------\n");
-        //     memory_object.printDataMemory();
-        // }
+            System.out.println("-------Data Memory--------\n");
+            memory_object.printDataMemory();
+        }
     }
 }

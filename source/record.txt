@@ -1,12 +1,12 @@
-Total number of cycles 18
-Total instructions 6
-CPI 3.0
+Total number of cycles 8
+Total instructions 4
+CPI 2.0
 Number of Data-transfer instructions 2
-Number of ALU instructions 3
-Number of Control instructions 1
-Number of stalls in the pipeline 3
-Number of data hazards 1
-Number of control hazards 1
-Number of stalls due to data hazards 2
-Number of stalls due to control hazards 1
+Number of ALU instructions 2
+Number of Control instructions 0
+Number of stalls in the pipeline 0
+Number of data hazards 2
+Number of control hazards 0
+Number of stalls due to data hazards 0
+Number of stalls due to control hazards 0
 Number of branch mispredictions 0

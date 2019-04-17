@@ -10,5 +10,3 @@ Number of control hazards 1
 Number of stalls due to data hazards 2
 Number of stalls due to control hazards 1
 Number of branch mispredictions 0
-
-

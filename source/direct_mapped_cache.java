@@ -31,6 +31,34 @@ public class direct_mapped_cache {
         }
     }
 
+    int toInt(String[] hex){
+        int a = 0;
+        int sum = 0;
+        for(int t = 0; t < 4; t++){
+            String[] arr = hex[t].split("");
+            for(int i = 0; i < hex[t].length(); i++){
+                int temp = (int) Math.pow(16, i+sum);
+                int val = Integer.parseInt(arr[  hex[t].length() - i - 1  ], 16);
+                a+=temp*val;
+                // System.out.println(temp+" "+val+" "+ temp*val);
+            }
+            sum+=2;
+        }
+        return a;
+    }
+
+    byte[] toByte(int i){
+        byte[] word = new  byte[4];
+        for(int j = 0; j < 4; j++){
+            word[j] = 0;
+        }
+        word[3] = (byte)(i>>24);
+        word[2] = (byte)(i>>16);
+        word[1] = (byte)(i>>8);
+        word[0] = (byte)(i>>0);
+        return word;
+    }
+
     // provide index as row and block offset as column
     block instruction_cache[];
 
@@ -40,8 +68,8 @@ public class direct_mapped_cache {
     // provide cache_size in number of words, where each word is 4 bytes (standard of RISC-V)
     // provide cache_block_size in number of words, where each word is 4 bytes
     // note that cache_size and cache_block_size must be multiple of 2
-    public void direct_mapped_instruction_cache(int cache_size, int cache_block_size) {
-
+    public direct_mapped_cache(int cache_size, int cache_block_size) {
+        System.out.println("entered cons");
         this.hits = this.misses = this.cold_misses = this.conflict_misses = this.capacity_misses = 0;
 
         this.cache_size = cache_size;
@@ -81,6 +109,7 @@ public class direct_mapped_cache {
         for(i_itr_1=0; i_itr_1<this.no_of_blocks_in_cache; i_itr_1++) {
             instruction_cache[i_itr_1] = new block();
         }
+        System.out.println("entere cons");
 
     }
 
@@ -89,7 +118,7 @@ public class direct_mapped_cache {
         // first divide the PC into tag, index and block offset
         // then return the data if present in cache, otherwise get the data from main memory by checking the tag bit
 
-        int tag, index, block_offset, temp_PC = address;
+        int tag, index = 0, block_offset, temp_PC = address;
         int i_itr_1;
 
         block_offset = temp_PC % ((int) Math.round(Math.pow(2,this.no_of_bits_in_block_offset)));
@@ -167,7 +196,11 @@ public class direct_mapped_cache {
 
         tag = temp_PC % ((int) Math.round(Math.pow(2,this.no_of_bits_in_tag)));
         temp_PC /= ((int) Math.round(Math.pow(2,this.no_of_bits_in_tag)));
-
+        System.out.println("index " + index + "  " + temp_PC + "  " + ((int) Math.round(Math.pow(2,this.no_of_bits_in_index))));
+        if(temp_PC==0){
+            index  = 0;
+            block_offset = 0;
+        }
         if(this.instruction_cache[index].is_valid) {
             if(this.instruction_cache[index].tag == tag) {
                 this.hits++;
@@ -283,7 +316,7 @@ public class direct_mapped_cache {
         byte b = (byte)(a2 & value);
 
         this.instruction_cache[index].data[block_offset] = b;
-        memory_object.memory_linked_hash_map.storeDataByte(value,address); // write-through policy
+        memory_object.storeDataByte(value,address); // write-through policy
 
     }
 
@@ -303,7 +336,11 @@ public class direct_mapped_cache {
 
         tag = temp_PC % ((int) Math.round(Math.pow(2,this.no_of_bits_in_tag)));
         temp_PC /= ((int) Math.round(Math.pow(2,this.no_of_bits_in_tag)));
-
+        if(temp_PC==0){
+            index  = 0;
+            block_offset = 0;
+        }
+        System.out.println("index " + index + "  " + temp_PC + "  " + ((int) Math.round(Math.pow(2,this.no_of_bits_in_index))));
         if(this.instruction_cache[index].is_valid) {
             if(this.instruction_cache[index].tag == tag) {
                 this.hits++;
@@ -346,22 +383,22 @@ public class direct_mapped_cache {
         byte b = (byte)(a2 & (int)bt[0]);
 
         this.instruction_cache[index].data[block_offset] = b;
-        memory_object.memory_linked_hash_map.storeDataByte(value,address); // write-through policy
+        memory_object.storeDataByte(value,address); // write-through policy
 
         b = (byte)(a2 & (int)bt[1]);
 
         this.instruction_cache[index].data[block_offset] = b;
-        memory_object.memory_linked_hash_map.storeDataByte(value,address); // write-through policy
+        memory_object.storeDataByte(value,address); // write-through policy
 
         b = (byte)(a2 & (int)bt[2]);
 
         this.instruction_cache[index].data[block_offset] = b;
-        memory_object.memory_linked_hash_map.storeDataByte(value,address); // write-through policy
+        memory_object.storeDataByte(value,address); // write-through policy
 
         b = (byte)(a2 & (int)bt[3]);
 
         this.instruction_cache[index].data[block_offset] = b;
-        memory_object.memory_linked_hash_map.storeDataByte(value,address); // write-through policy
+        memory_object.storeDataByte(value,address); // write-through policy
 
     }
 

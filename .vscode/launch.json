@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - control",
+            "request": "launch",
+            "mainClass": "control",
+            "projectName": "black-hole3_d206b212"
+        }
+    ]
+}

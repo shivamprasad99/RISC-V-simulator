@@ -20,7 +20,7 @@ public class control{
     static register_file register_file_object = new register_file();
     static instructions instruction_object;
     static memory memory_object = new memory();
-    static number_to_instrucions_function control_and_name_of_instruction = new number_to_instrucions_function();;
+    static number_to_instrucions_function control_and_name_of_instruction = new number_to_instrucions_function();
     static PC pc_object = new PC();
     static int line_no;
     static stageTwoDecode decoder_object = new stageTwoDecode(); 
@@ -31,7 +31,15 @@ public class control{
     static Buffer EX = new Buffer();
     static int stall_counter = 0;
     static Buffer MEM = new Buffer();
-    static direct_mapped_cache inst_cache = new direct_mapped_cache();
+
+
+
+
+    static direct_mapped_cache inst_cache = new direct_mapped_cache(64,16);
+    static direct_mapped_cache data_cache = new direct_mapped_cache(64,16);
+
+
+
 
     static int branch_mis = 0;
     static int data_stall = 0, control_stall = 0;
@@ -145,7 +153,7 @@ public class control{
         a.immediate = 0;
         a.IR = "";
         for(int i = 0; i < 4; i++){
-            int val = memory_object.loadByte(PC);
+            int val = inst_cache.loadByte(PC,memory_object);
             String currentBinary = Integer.toBinaryString(256 + val);
             String s = currentBinary.substring(currentBinary.length() - 8);
             a.IR = a.IR + s;
@@ -430,18 +438,18 @@ public class control{
 
         // using muxMa
         if(a.which_instruction == 13){
-            a.memoryData = memory_object.loadByte(muxMa);
+            a.memoryData = data_cache.loadByte(muxMa,memory_object);
         }
         if(a.which_instruction == 14){
-            a.memoryData = memory_object.loadWord(muxMa);
+            a.memoryData = data_cache.loadWord(muxMa,memory_object);
         }
         if(a.which_instruction == 27){
             System.out.println("---------Storing ------------- "+a.rm);
-            memory_object.storeDataByte(a.rm, muxMa);
+            data_cache.storeDataByte(a.rm, muxMa,memory_object);
         }
         if(a.which_instruction == 29){
             System.out.println("---------Storing ------------- "+a.rm);
-            memory_object.storeDataWord(a.rm, muxMa);
+            data_cache.storeDataWord(a.rm, muxMa,memory_object);
         }   
         return a;
     }
@@ -488,6 +496,7 @@ public class control{
     }
 
     public static void main(String args[]){
+        System.out.println("vajj00");
         lexical ltemp = new lexical();
         ltemp.run(memory_object);
         System.out.println("-------Data Memory--------\n");
@@ -631,6 +640,8 @@ public class control{
             print_record();
         }
         catch(Exception e){}
+        System.out.println(data_cache.hits + " miss "  + data_cache.misses + " cinflict " + data_cache.conflict_misses + " cold " + data_cache.cold_misses); 
+        System.out.println(inst_cache.hits + " miss "  + inst_cache.misses + " cinflict " + inst_cache.conflict_misses + " cold " + inst_cache.cold_misses); 
         register_file_object.printRegisterFile();
         System.out.println("Print Final TextMemory(1) DataMemory(2) Both(3)");
         int c = read.nextInt();

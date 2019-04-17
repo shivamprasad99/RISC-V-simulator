@@ -10,20 +10,14 @@ public class memory {
     int code_start = 0x0;
     int data_start = 0x10000000;
     int data_stop = 0x10000000;
-    public int stack_start= 0x7afffffc;
+    public int stack_start= 0x7FFFFFFC;
 
-    public void checker(){
-        if(code_start < 0x0 && code_start >= 0xffffffff){
-            System.out.println("Out of bound");
-            System.exit(0);
-        }
-        else if(data_start >= stack_start){
-            System.out.println("Out of bound");
-            System.exit(0);
-        }
-    }
 
     public void storeDataByte(int value, int address){
+        // if(address > 0x7FFFFFFF){
+        //     System.out.println("Memory Out of Bound\nYou might be growing stack in opposite direction");
+        //     System.exit(0);
+        // }
         int a2 = 0xff;
         byte b = (byte)(a2 & value);
         memory_linked_hash_map.put(address, b);    
@@ -87,6 +81,11 @@ public class memory {
     }
 
     public void storeDataWord(int value, int address){
+        // if(address >= 0x7FFFFFFF){
+        //     System.out.println("Memory Out of Bound\nYou might be growing stack in opposite direction");
+        //     System.exit(0);
+        // }
+        if(address > 0x7FFFFFFC)
         System.out.println("Storing value "+value + " " + address);
         byte[] bt = toByte(value);
         storeDataByte(bt[0], address);
@@ -181,10 +180,12 @@ public class memory {
 
     void printDataMemory(){
         for(int i = 0x10000000; i <= data_stop; i+=4){
-            System.out.println(i + " -> "+memory_linked_hash_map.get(i)
-            + " " + memory_linked_hash_map.get(i+1)
-            + " " + memory_linked_hash_map.get(i+2)
-            + " " + memory_linked_hash_map.get(i+3));
+            if(memory_linked_hash_map.get(i)!=null){
+                System.out.println(i + " -> "+memory_linked_hash_map.get(i)
+                + " " + memory_linked_hash_map.get(i+1)
+                + " " + memory_linked_hash_map.get(i+2)
+                + " " + memory_linked_hash_map.get(i+3));
+            }
         }
     }
 

@@ -1,5 +1,5 @@
 
-public class controlUnit{
+public class controlUnit3{
 
     //each of these functions need to be run before any action for that stage.
 

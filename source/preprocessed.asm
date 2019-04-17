@@ -1,6 +1,7 @@
 .text 
-la x5 arr 
-addi x5 x5 32 
-addi x6 x0 6 
-sw x6 0(x5) 
-lw x10 0(x5) 
+addi x4 x4 12 
+addi x2 x2 32 
+addi x3 x3 4 
+jal x0 label 
+label: sw x3 0(x2) 
+lw x6 0(x2) 

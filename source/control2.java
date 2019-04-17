@@ -24,7 +24,8 @@ public class control2{
     static stageTwoDecode decoder_object = new stageTwoDecode(); 
     static int which_instruction;
     static controlUnit controlUnitObject = new controlUnit();
-
+    static int control_inst = 0, alu_inst = 0, data_inst = 0;
+    
 
     // control(){
     //     pc_value = 0;
@@ -41,7 +42,14 @@ public class control2{
 
 
     // seperate line_no and machine code.
-    
+    static void print_record()throws IOException{
+        BufferedWriter writer = new BufferedWriter(new FileWriter("./record.txt"));
+        writer.write("Total instructions " + (control_inst + alu_inst + data_inst) + "\n");
+        writer.write("Number of Data-transfer instructions "+data_inst+"\n");
+        writer.write("Number of ALU instructions " + alu_inst + "\n");
+        writer.write("Number of Control instructions " +control_inst+"\n");
+        writer.close();
+    }
     static String seperate_line_and_machineCode(String line){
         char[] char_line = line.toCharArray();  // convert String to char_array
         int i = 0;
@@ -172,44 +180,61 @@ public class control2{
         kept ry and rz as string and if function return intger convert it to String.
     */
     static void ALU(){
+        if(which_instruction == 12 || which_instruction == 36 || (which_instruction >= 30 && which_instruction <= 35) )
+            control_inst++;
+        if((which_instruction >= 13 && which_instruction <= 17) || (which_instruction >= 27 && which_instruction <= 29)){
+            data_inst++;
+        }
+        if(which_instruction == 1 || which_instruction == 10)
+            alu_inst++;
         if(which_instruction == 1 || which_instruction == 10 || (which_instruction >= 13 && which_instruction <= 17) || (which_instruction >= 27 && which_instruction <= 29)){
             rz = instruction_object.add(muxA, muxB);
         }  
         else if(which_instruction == 37){
+            alu_inst++;
             rz = instruction_object.mul(muxA, muxB);
             System.out.println("---------------rz-----------" + rz);
         }  
         else if(which_instruction == 38){
+            alu_inst++;
             rz = instruction_object.div(muxA, muxB);
         }           
         else if(which_instruction == 2 || which_instruction == 11){
+            alu_inst++;
             rz = instruction_object.and(muxA, muxB);
             
         }
         else if(which_instruction == 3 || which_instruction == 18){
+            alu_inst++;
             rz = instruction_object.or_(muxA, muxB);
             
         }
         else if(which_instruction == 4 || which_instruction == 19){
+            alu_inst++;
             rz = instruction_object.sll(muxA, muxB);
             
         }
         else if(which_instruction == 5 || which_instruction == 20){
+            alu_inst++;
             rz = instruction_object.slt(muxA, muxB);
             
         }
         else if(which_instruction == 6 || which_instruction == 21){
+            alu_inst++;
             rz = instruction_object.sltu(muxA, muxB);
             
         }
         else if(which_instruction == 7 || which_instruction == 22){
+            alu_inst++;
             rz = instruction_object.sra(muxA, muxB);
             
         }
         else if(which_instruction == 8){
+            alu_inst++;
             rz = instruction_object.sub(muxA, muxB);
         }
         else if(which_instruction == 9 || which_instruction == 24){
+            alu_inst++;
             rz = instruction_object.xor(muxA, muxB);
         }
         else if(which_instruction == 12){   // jalr
@@ -223,11 +248,13 @@ public class control2{
         }
         // where is srl in which_instruction
         else if(which_instruction == 23){
+            alu_inst++;
             rz = instruction_object.srl(muxA, muxB);
         }
         else if(which_instruction == 25 || which_instruction == 26){
             // give pc to ra and immediate value to muxB
             // ALU will do the 12 bit shifting for you
+            alu_inst++;
             rz = instruction_object.wide_immediate_addition(muxA, muxB);
             System.out.println("rz " + rz);
         }
@@ -405,6 +432,10 @@ public class control2{
                     register_file_object.printRegisterFile();
             }
         }
+        try{
+            print_record();
+        }
+        catch(Exception e){}
         register_file_object.printRegisterFile();
         System.out.println("Print Final TextMemory(1) DataMemory(2) Both(3)");
         int c = read.nextInt();

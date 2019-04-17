@@ -31,6 +31,16 @@ public class control{
     static Buffer EX = new Buffer();
     static int stall_counter = 0;
     static Buffer MEM = new Buffer();
+    static direct_mapped_cache inst_cache = new direct_mapped_cache();
+
+    static int branch_mis = 0;
+    static int data_stall = 0, control_stall = 0;
+    static int data_hazard = 0, control_hazard = 0; 
+    static int control_inst = 0, alu_inst = 0, data_inst = 0;
+    static int no_cycle = 4;
+    // int cycle_counter=0;
+    // int ex_stall=0,mem_stall=0;
+        
 
     // control(){
     //     pc_value = 0;
@@ -43,11 +53,27 @@ public class control{
     //     control_and_name_of_instruction.set_number_to_instrucions_function();
     //     stageTwoDecode decoder_object = new stageTwoDecode();
     // }
-
-
-
     // seperate line_no and machine code.
     
+
+    static void print_record()throws IOException{
+        BufferedWriter writer = new BufferedWriter(new FileWriter("./record.txt"));
+        writer.write("Total number of cycles " + (no_cycle+data_stall) + "\n");
+        writer.write("Total instructions " + (control_inst + alu_inst + data_inst) + "\n");
+        writer.write("CPI "+ (double)(no_cycle+data_stall)/(control_inst + alu_inst + data_inst) + "\n");
+        writer.write("Number of Data-transfer instructions "+data_inst+"\n");
+        writer.write("Number of ALU instructions " + alu_inst + "\n");
+        writer.write("Number of Control instructions " +control_inst+"\n");
+        writer.write("Number of stalls in the pipeline " + (data_stall + control_stall) + "\n");
+        writer.write("Number of data hazards " + data_hazard + "\n");
+        writer.write("Number of control hazards " + control_hazard+ "\n");
+        writer.write("Number of stalls due to data hazards " + data_stall+ "\n");
+        writer.write("Number of stalls due to control hazards " + control_stall+ "\n");
+        writer.write("Number of branch mispredictions " + branch_mis + "\n");
+        writer.close();
+    }
+
+
     static String seperate_line_and_machineCode(String line){
         char[] char_line = line.toCharArray();  // convert String to char_array
         int i = 0;
@@ -112,6 +138,7 @@ public class control{
 
 
     static Buffer fetch(){
+        no_cycle++;
         controlUnitObject.stage1();
         Buffer a = new Buffer();
         setMuxValues(a);
@@ -150,6 +177,7 @@ public class control{
         setMuxValues(a);
             
         ArrayList<Integer> rs1_rs2_rd_immediate_n =  decoder_object.decode(a.IR);   
+        if(rs1_rs2_rd_immediate_n.size()!=0)
         System.out.println(rs1_rs2_rd_immediate_n);
         // System.out.println(rs1_rs2_rd_immediate_n.get(1));
         
@@ -182,55 +210,81 @@ public class control{
     }
 
 
+    
+
     /*
         kept ry and rz as string and if function return intger convert it to String.
     */
     static Buffer ALU(Buffer a){
+        
+        if(a.is_flush != 1){
+            if(a.which_instruction == 12 || a.which_instruction == 36 || (a.which_instruction >= 30 && a.which_instruction <= 35) )
+                control_inst++;
+            if((a.which_instruction >= 13 && a.which_instruction <= 17) || (a.which_instruction >= 27 && a.which_instruction <= 29)){
+                data_inst++;
+            }
+        }
+        if(a.is_flush == 1)
+            alu_inst -= 1;
+
         a.rm = a.rb;
         controlUnitObject.setInstruction(a.which_instruction);
         controlUnitObject.stage3();
         setMuxValues(a);
-            
+        if(a.which_instruction == 1 || a.which_instruction == 10)
+            alu_inst++;
+    
         if(a.which_instruction == 1 || a.which_instruction == 10 || (a.which_instruction >= 13 && a.which_instruction <= 17) || (a.which_instruction >= 27 && a.which_instruction <= 29)){
             a.rz = instruction_object.add(muxA, muxB);
         }    
         else if(a.which_instruction == 37){
+            alu_inst++;
             a.rz = instruction_object.mul(muxA, muxB);
         }  
         else if(a.which_instruction == 38){
+            alu_inst++;
             a.rz = instruction_object.div(muxA, muxB);
         }   
         else if(a.which_instruction == 2 || a.which_instruction == 11){
+            alu_inst++;
             a.rz = instruction_object.and(muxA, muxB);
             
         }
         else if(a.which_instruction == 3 || a.which_instruction == 18){
+            alu_inst++;
             a.rz = instruction_object.or_(muxA, muxB);
             
         }
         else if(a.which_instruction == 4 || a.which_instruction == 19){
+            alu_inst++;
             a.rz = instruction_object.sll(muxA, muxB);
             
         }
         else if(a.which_instruction == 5 || a.which_instruction == 20){
+            alu_inst++;
             a.rz = instruction_object.slt(muxA, muxB);
             
         }
         else if(a.which_instruction == 6 || a.which_instruction == 21){
+            alu_inst++;
             a.rz = instruction_object.sltu(muxA, muxB);
             
         }
         else if(a.which_instruction == 7 || a.which_instruction == 22){
+            alu_inst++;
             a.rz = instruction_object.sra(muxA, muxB);   
         }
         else if(a.which_instruction == 8){
+            alu_inst++;
             a.rz = instruction_object.sub(muxA, muxB);
         }
         else if(a.which_instruction == 9 || a.which_instruction == 24){
+            alu_inst++;
             a.rz = instruction_object.xor(muxA, muxB);
         }
         else if(a.which_instruction == 12){   // jalr
             // register_file_object.store_in_register(a.rd, PC);
+            
             PC = pc_object.adder(PC);
             // PC -= 4;
             // PC -= stall_counter*4;
@@ -247,11 +301,13 @@ public class control{
         }
         // where is srl in a.which_instruction
         else if(a.which_instruction == 23){
+            alu_inst++;
             a.rz = instruction_object.srl(muxA, muxB);
         }
         else if(a.which_instruction == 25 || a.which_instruction == 26){
             // give pc to ra and immediate value to muxB
             // ALU will do the 12 bit shifting for you
+            alu_inst++;
             a.rz = instruction_object.wide_immediate_addition(muxA, muxB) -4;;
             
         }
@@ -361,8 +417,6 @@ public class control{
             else
                 return PC;
         }
-        // }
-        // if
         return 0;
     }
 
@@ -478,15 +532,13 @@ public class control{
         
 
         
-        int cycle_counter=0;
         IF = fetch();
 
-        int ex_stall=0,mem_stall=0;
         // System.out.println("IF");
         // System.out.println("ID " + ID.which_instruction);
         // System.out.println("EX " + EX.which_instruction);
         // System.out.println("MEM " + MEM.which_instruction);
-        while(PC < memory_object.code_start + 4*20){
+        while(PC < memory_object.code_start + 4*5){
             writeBack(MEM);
           
             MEM = memory_read_write(EX);    // for ry
@@ -497,13 +549,14 @@ public class control{
             
             if((ID.rs1 == EX.rd&&ID.rs1!=0)||(ID.rs2 == EX.rd&&ID.rs2!=0)){
                 // IF = fetch();
-                stall_counter+=2;
+                data_stall+=2;
+                data_hazard++;
+                //stall_counter+=2;
                 System.out.println("entered sec");
                 
                 print(flag, read);
-                cycle_counter+=2;
+                // cycle_counter+=2;
                 writeBack(MEM);
-                // System.out.println("WHAT THE FUCKWHAT THE FUCKWHAT THE FUCKWHAT THE FUCKWHAT THE FUCKWHAT THE FUCKWHAT THE FUCKWHAT THE FUCKWHAT THE FUCKWHAT THE FUCK");
                 MEM = memory_read_write(EX);    // for ry
                 
                 print(flag, read);
@@ -514,9 +567,11 @@ public class control{
             }
             else if((ID.rs1 == MEM.rd&&ID.rs1!=0)||(ID.rs2 == MEM.rd&&ID.rs2!=0) ){
                 // mem_stall=1;
+                data_stall++;
+                data_hazard++;
                 System.out.println("entered first");
-                stall_counter++;
-                cycle_counter++;
+                //stall_counter++;
+                // cycle_counter++;
                 print(flag, read);
                 writeBack(MEM); 
                 ID = decoder(IF);
@@ -529,6 +584,10 @@ public class control{
                     continue;
                 }
                 else{
+                    control_hazard++;
+                    branch_mis++;
+                    control_stall++;
+                    //stall_counter++;
                     // IF = fetch();
                     print(flag,read);
                     writeBack(MEM);     
@@ -541,15 +600,16 @@ public class control{
                     ID.rs2 = 0;
                     ID.ra = 0;
                     ID.rb = 0;
+                    ID.is_flush = 1;
                 }
             }
             else if(ID.which_instruction == 36 || ID.which_instruction == 12){
-                //System.out.println("jal khbkbv");
+                control_stall++;
+                control_hazard++;
+                //stall_counter++;
                 IF = fetch();
-                // register_file_object.printRegisterFile();
                 print(flag,read);
                 writeBack(MEM); 
-                // register_file_object.printRegisterFile();
                 MEM = memory_read_write(EX);    // for ry
                 EX = ALU(ID);
                 ID = decoder(IF);
@@ -559,12 +619,18 @@ public class control{
                 ID.rs2 = 0;
                 ID.ra = 0;
                 ID.rb = 0;
+                ID.is_flush = 1;
             }
 
             IF = fetch();
             print(flag, read);
-            register_file_object.printRegisterFile();
+            if(flag == 2)
+                register_file_object.printRegisterFile();
         }
+        try{
+            print_record();
+        }
+        catch(Exception e){}
         register_file_object.printRegisterFile();
         System.out.println("Print Final TextMemory(1) DataMemory(2) Both(3)");
         int c = read.nextInt();
@@ -579,5 +645,6 @@ public class control{
             System.out.println("-------Data Memory--------\n");
             memory_object.printDataMemory();
         }
+
     }
 }

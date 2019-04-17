@@ -291,7 +291,6 @@ public class stageTwoDecode{
 						// return retVal;
 					}
 			}catch(Exception e){
-				System.out.println("Error found");
 			}
 			// System.out.println("Size = "+retVal.get(4));
 			instructionType = "";

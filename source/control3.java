@@ -30,11 +30,11 @@ public class control3{
     static int line_no;
     static stageTwoDecode decoder_object = new stageTwoDecode(); 
     // static int which_instruction;
-    static controlUnit controlUnitObject = new controlUnit();
-    static Buffer IF = new Buffer();
-    static Buffer ID = new Buffer();
-    static Buffer EX = new Buffer();
-    static Buffer MEM = new Buffer();
+    static controlUnit3 controlUnitObject = new controlUnit3();
+    static Buffer3 IF = new Buffer3();
+    static Buffer3 ID = new Buffer3();
+    static Buffer3 EX = new Buffer3();
+    static Buffer3 MEM = new Buffer3();
 
     // control(){
     //     pc_value = 0;
@@ -82,7 +82,7 @@ public class control3{
     //     return s[1];
     // }
 
-    static void setMuxValues(Buffer a){
+    static void setMuxValues(Buffer3 a){
         change_conditional_signal(a.which_instruction);
         if(controlUnitObject.pcSelect == 1)
             pc_object.muxPc = PC;
@@ -133,9 +133,9 @@ public class control3{
     }
 
 
-    static Buffer fetch(){
+    static Buffer3 fetch(){
         controlUnitObject.stage1();
-        Buffer a = new Buffer();
+        Buffer3 a = new Buffer3();
         setMuxValues(a);
         a.immediate = 0;
         a.IR = "";
@@ -167,7 +167,7 @@ public class control3{
 
 
 
-    static Buffer decoder(Buffer a){
+    static Buffer3 decoder(Buffer3 a){
         controlUnitObject.stage2();
         setMuxValues(a);
             
@@ -207,7 +207,7 @@ public class control3{
     /*
         kept ry and rz as string and if function return intger convert it to String.
     */
-    static Buffer ALU(Buffer a){
+    static Buffer3 ALU(Buffer3 a){
         
 
         controlUnitObject.setInstruction(a.which_instruction);
@@ -349,7 +349,7 @@ public class control3{
     }
 
 
-    static Buffer memory_read_write(Buffer a){
+    static Buffer3 memory_read_write(Buffer3 a){
         setMuxValues(a);         // for muxMa
         controlUnitObject.stage4();
         setMuxValues(a);
@@ -373,7 +373,7 @@ public class control3{
     }
 
 
-    static void writeBack(Buffer a){
+    static void writeBack(Buffer3 a){
         controlUnitObject.stage5();
         setMuxValues(a);
             
@@ -381,7 +381,7 @@ public class control3{
             register_file_object.store_in_register(a.rd, a.ry);
     }
 
-    static int calculateTarget(Buffer a){
+    static int calculateTarget(Buffer3 a){
         if(a.which_instruction == 30){
             if(a.ra == a.rb)
                 return a.immediate+PC;
@@ -485,10 +485,10 @@ public class control3{
         }
         
          System.out.println("Added to memory");
-        // Buffer IF = new Buffer();
-        // Buffer ID = new Buffer();
-        // Buffer EX = new Buffer();
-        // Buffer MEM = new Buffer();
+        // Buffer3 IF = new Buffer3();
+        // Buffer3 ID = new Buffer3();
+        // Buffer3 EX = new Buffer3();
+        // Buffer3 MEM = new Buffer3();
         
         // Scanner read = new Scanner(System.in);
        
@@ -515,10 +515,6 @@ public class control3{
         // System.out.println("MEM " + MEM.which_instruction);
         while(PC < memory_object.code_start + 4*5){
             cycleCounter++;
-
-
-
-
 
             writeBack(MEM);
             m2e=MEM.ry;

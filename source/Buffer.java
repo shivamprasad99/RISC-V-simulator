@@ -15,4 +15,5 @@ class Buffer{
         int branch_prediction;
         int immediate;
         int which_instruction;
+        int is_flush = 0;
 }

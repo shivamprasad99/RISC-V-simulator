@@ -38,7 +38,7 @@ public class control3{
 
     static int branch_mis = 0;
     static int data_stall = 0, control_stall = 0;
-    static int data_hazard = 0, control_hazard = 0; 
+    static int data_hazard = 0, control_hazard = 0, temp_data_hazard = 0;
     static int control_inst = 0, alu_inst = 0, data_inst = 0;
     static int no_cycle = 4;
 
@@ -70,7 +70,7 @@ public class control3{
         writer.write("Number of ALU instructions " + alu_inst + "\n");
         writer.write("Number of Control instructions " +control_inst+"\n");
         writer.write("Number of stalls in the pipeline " + (data_stall + control_stall) + "\n");
-        writer.write("Number of data hazards " + data_hazard + "\n");
+        writer.write("Number of data hazards " + temp_data_hazard + "\n");
         writer.write("Number of control hazards " + control_hazard+ "\n");
         writer.write("Number of stalls due to data hazards " + data_stall+ "\n");
         writer.write("Number of stalls due to control hazards " + control_stall+ "\n");
@@ -557,7 +557,7 @@ public class control3{
         
         IF = fetch();
 
-        int ex_stall=0,mem_stall=0;
+        // int ex_stall=0,mem_stall=0;
         // int stallCounter=0;
         // int cycleCounter=0;
 
@@ -588,6 +588,13 @@ public class control3{
 
             ID = decoder(IF);
             
+            if((ID.rs1 == EX.rd&&ID.rs1!=0)||(ID.rs2 == EX.rd&&ID.rs2!=0)){
+                temp_data_hazard++;
+            }
+            else if((ID.rs1 == MEM.rd&&ID.rs1!=0)||(ID.rs2 == MEM.rd&&ID.rs2!=0) ){
+                temp_data_hazard++;
+            }
+
             if((ID.which_instruction<30&& ID.which_instruction!=12)||ID.which_instruction>36){
                 int flag_data_hazard=0;
                 if((ID.rs1 == MEM.rd&&ID.rs1!=0&&ID.rs1!=-1)||(ID.rs2 == MEM.rd&&ID.rs2!=0&&ID.rs2!=-1) ){

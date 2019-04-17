@@ -877,6 +877,7 @@ public class control3{
         catch(Exception e){}
         System.out.println(data_cache.hits + " miss "  + data_cache.misses + " conflict " + data_cache.conflict_misses + " cold " + data_cache.cold_misses); 
         System.out.println(inst_cache.hits + " miss "  + inst_cache.misses + " conflict " + inst_cache.conflict_misses + " cold " + inst_cache.cold_misses); 
+
         register_file_object.printRegisterFile();
         System.out.println("Print Final TextMemory(1) DataMemory(2) Both(3)");
         int c = read.nextInt();

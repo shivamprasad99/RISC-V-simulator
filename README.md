@@ -5,5 +5,5 @@ The team consists of
 Amritpal Singh,
 Shivam Prasad,
 Mehakjot Singh,
-Divyanshu Bai,
+Divyanshu Bains,
 Ripudaman Singh
